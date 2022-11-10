@@ -43,7 +43,38 @@ const restaurant = {
 
 };
 
+/* 
+// Distructuring Arrays
+const arr = [2, 3, 4];
+const [x, y, z] = arr;
+
+console.log(y);
+console.log(arr);
+const [fir, ,sec] = restaurant.categories;
+console.log(fir, sec);
+
+// Switching Variables
+let [main, other] = restaurant.categories;
+[main, other] = [other, main];
+console.log(main, other);
+
+// Array distructuring from a function
+console.log(restaurant.order(1, 0));
+
+// Distructuring in nested array
+const nested = [1, 2, [3, 4]];
+const [i, , j] = nested;
+const [a, , [b, c]] = nested;
+console.log(i, j);
+console.log(a, b, c);
+
+// Default values
+const [e, f, g=3] = [1, 2];
+console.log(e, f, g); 
+*/
+
 // Destructuring Objects
+/* 
 const {
   name: n, 
   address: add, 
@@ -80,8 +111,9 @@ restaurant.orderDelivery({
   sIndex: 1,
   mIndex: 2,
 });
-
+ */
 // Spread Operator
+/* 
 const arr = [1, 2, 3];
 const badArr = [arr[0], arr[1], arr[2], 3, 4];
 console.log(badArr);
@@ -92,58 +124,70 @@ console.log(...newArr);
 
 // Copy array
 const menuCopy = [...restaurant.starterMenu, ...restaurant.mainMenu];
-console.log(menuCopy);
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* 
-// Distructuring Arrays
-const arr = [2, 3, 4];
-const [x, y, z] = arr;
-
-console.log(y);
-console.log(arr);
-const [fir, ,sec] = restaurant.categories;
-console.log(fir, sec);
-
-// Switching Variables
-let [main, other] = restaurant.categories;
-[main, other] = [other, main];
-console.log(main, other);
-
-// Array distructuring from a function
-console.log(restaurant.order(1, 0));
-
-// Distructuring in nested array
-const nested = [1, 2, [3, 4]];
-const [i, , j] = nested;
-const [a, , [b, c]] = nested;
-console.log(i, j);
-console.log(a, b, c);
-
-// Default values
-const [e, f, g=3] = [1, 2];
-console.log(e, f, g); 
+console.log(menuCopy); 
 */
+
+
+// Maps - Data structure
+const rest = new Map();
+rest.set('name', 'Classicon Italiano');
+rest.set(1, 'Firenze, Italy');
+console.log(rest.set(2, 'Lisbon, Portugal'));
+rest.set('Categories', 'Organic')
+  .set('Open', 11)
+  .set('Close', 24)
+  .set(true, 'We are open :D')
+  .set(false, 'We are closed :(');
+console.log(rest.get('name'));
+console.log(rest.get('Open'));
+
+const time1 = 22;
+const time2 = 2;
+console.log( rest.get(time1 > rest.get('Open') && time1 < rest.get('Close')) );
+console.log( rest.get(time2 > rest.get('Open') && time2 < rest.get('Close')) );
+
+console.log(rest.has('Categories'));
+rest.delete(1);
+// rest.clear();
+const arr = [1,2];
+console.log(rest.set(arr, 'My array'));
+console.log(rest.get(arr));
+
+const myH1 = document.querySelector('h1');
+rest.set(myH1, 'Heading');
+
+console.log(rest);
+console.log(rest.size);
+
+const question = new Map([
+  ['que', 'What is the best programing language?'],
+  [1, 'C'],
+  [2, 'JS'],
+  [3, 'Java'],
+  [4, 'Python'],
+  ['answer', 2],
+  [true, 'Correct 😁'],
+  [false, 'Boooo 👎'],
+]);
+
+console.log(question);
+
+for (const [key, value] of question) {
+  key === 'que' ? console.log(`Que: ${value}`) : '';
+  if (typeof key === 'number') { 
+    console.log(`${key}: ${value}`);
+  }
+}
+// const answer = prompt('Your Answer'); 
+const answer = 2;
+console.log(answer);
+if (!isNaN(answer) && Number(answer) >= 1 && Number(answer) <= 4) {
+  answer == question.get('answer') ? console.log(question.get(true) + ` Javascript all the way`) : console.log(question.get(false) + ` Duuuuude "` + question.get(Number(answer))  + `" sucks deep`); 
+} else {
+  console.log('Cmon dude I was looking for numbers between 1 and 4 😒');
+}
+
+// Convert map to Array
+const converted = [...question];
+console.log(converted);
 
