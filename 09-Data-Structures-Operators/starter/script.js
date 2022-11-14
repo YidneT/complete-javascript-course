@@ -1,7 +1,6 @@
 'use strict';
 
-const flights =
-  '_Delayed_Departure;fao93766109;txl2133758440;11:25+_Arrival;bru0943384722;fao93766109;11:45+_Delayed_Arrival;hel7439299980;fao93766109;12:05+_Departure;fao93766109;lis2323639855;12:30';
+
 
 const restaurant = {
   name: 'Classico Italiano',
@@ -129,7 +128,7 @@ console.log(menuCopy);
 
 
 // Maps - Data structure
-const rest = new Map();
+/* const rest = new Map();
 rest.set('name', 'Classicon Italiano');
 rest.set(1, 'Firenze, Italy');
 console.log(rest.set(2, 'Lisbon, Portugal'));
@@ -189,5 +188,114 @@ if (!isNaN(answer) && Number(answer) >= 1 && Number(answer) <= 4) {
 
 // Convert map to Array
 const converted = [...question];
-console.log(converted);
+console.log(converted); */
+
+
+// Working with Strings
+const airline = 'Ethiopian Airline';
+console.log(airline[2]); // h
+console.log(airline.length); // 17
+console.log(airline.indexOf('i')); // 3
+console.log(airline.lastIndexOf('i')); // 14
+console.log(airline.indexOf('Air')); // 10
+console.log(airline.slice(10)); // Airline
+console.log(airline.slice(airline.indexOf(' ') + 1)); // Airline
+console.log(airline.slice(0, 5)); // Ethio
+console.log(airline.slice(-2)); // ne
+console.log(airline.slice(5, -4)); // pian Air
+console.log(airline.toUpperCase());
+
+const checkMiddleSeat = function (seat) {
+  const st = seat.slice(-1);
+  if (st == 'B' || st == 'E') {
+    console.log('You got the middle seat 😒');
+  } else {
+    console.log('You got lucky 😎');
+  }
+}
+
+// Fixing white space
+const email = '  joNaS@gmail. COm \n';
+const email1 = email.toLowerCase().trim();
+const email2 = email.toLocaleLowerCase().replaceAll(' ', '');
+console.log(email1); // jonas@gmail. com
+console.log(email2); // jonas@gmail.com
+
+const priceGB = '128,92#';
+const priceUS = priceGB.replace(',', '.').replace('#', '$');
+console.log(priceUS);
+
+const announce = 'All passengers come to boarding door 23. Boarding door 23!';
+console.log(announce.replace('door', 'gate'));
+console.log(announce.replaceAll('door', 'gate'));
+
+const plane = 'Boeing B787neo';
+console.log(plane.includes('B787'));
+console.log(plane.includes('A787'));
+console.log(plane.startsWith('Bo'));
+if (plane.includes('Boeing') && plane.endsWith('neo')) {
+  console.log('Part of the new Boeing series');
+}
+
+// String split and join
+const fullname = 'yidnek tamirat';
+const [first, last] = fullname.split(' ');
+console.log(`Name: ${first} ${last}`);
+
+const capitalizeName = function (fullname) {
+  const name = [];
+  for (const n of fullname.split(' ')) {
+    // name.push(n[0].toUpperCase() + n.slice(1));
+    name.push(n.replace(n[0], n[0].toUpperCase()));
+  }
+  return name;
+}
+
+console.log(capitalizeName('yid tam taf tek'));
+console.log(capitalizeName('red green blue').join(', '));
+
+// Padding
+const message = 'Card No: 1234'
+console.log(message.padEnd(20, '*'));
+const maskCardNo = function (number) {
+  const num = String(number);
+  const length = num.length;
+  const sliced = num.slice(-4);
+  console.log(sliced.padStart(length, '*'));
+}
+
+maskCardNo(1234567898765);
+maskCardNo('12376543273828');
+
+// Repeat
+const msg = 'Bad weather! All departures delayed--- ';
+console.log(msg.repeat(3));
+
+const planesInline = function (n) {
+  console.log(`${n} planes inline ${'✈️'.repeat(n)}`);
+}
+
+planesInline(3);
+planesInline(7);
+
+
+const flights =
+  '_Delayed_Departure;fao93766109;txl2133758440;11:25+_Arrival;bru0943384722;fao93766109;11:45+_Delayed_Arrival;hel7439299980;fao93766109;12:05+_Departure;fao93766109;lis2323639855;12:30';
+// 🔴 Delayed Departure from FAO to TXL (11h25)
+//              Arrival from BRU to FAO (11h45)
+//   🔴 Delayed Arrival from HEL to FAO (12h05)
+//            Departure from FAO to LIS (12h30)
+
+console.log(' Cleaning Flights'.padStart(20, '='));
+const getCode = str => str.slice(0, 3).toUpperCase();
+for (const flight of flights.split('+')) {
+  let [type, from, to, time] = flight.split(';');
+  type = type.slice(1).replace('_', ' ');
+  type = type.includes('Delayed') ? `🛑 ${type}` : type.padStart(20, ' ');
+  from = getCode(from);
+  to = getCode(to);
+  time = time.replace(':', 'h');
+  console.log(`${type} from ${from} to ${to} (${time})`);
+}
+
 
