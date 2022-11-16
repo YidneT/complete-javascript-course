@@ -521,6 +521,7 @@ console.log(converted); */
 
 
 // Working with Strings
+/* 
 const airline = 'Ethiopian Airline';
 console.log(airline[2]); // h
 console.log(airline.length); // 17
@@ -626,5 +627,20 @@ for (const flight of flights.split('+')) {
   time = time.replace(':', 'h');
   console.log(`${type} from ${from} to ${to} (${time})`);
 }
+*/
 
+//// Coding Challenge 4
+
+const data = `underscore_case
+ first_name
+Some_Variable 
+  calculate_AGE
+delayed_departure`;
+
+const variables = data.split('\n');
+for (const [index, variable] of variables.entries()) {  
+  const words = variable.replaceAll(' ', '').split('_');
+  const camelCase = words[0].toLowerCase() + words[1][0].toUpperCase() + words[1].slice(1).toLowerCase();
+  console.log(`${camelCase.padEnd(20, ' ')} ${'✅'.repeat(index+1)}`);
+}
 
