@@ -169,27 +169,72 @@ console.log(tot(200)); */
 2. Call this method whenever the user clicks the "Answer poll" button.
 3. Create a method 'displayResults' which displays the poll results. The method takes a string as an input (called 'type'), which can be either 'string' or 'array'. If type is 'array', simply display the results array as it is, using console.log(). This should be the default option. If type is 'string', display a string like "Poll results are 13, 2, 4, 1". 
 4. Run the 'displayResults' method at the end of each 'registerNewAnswer' method call. */
+/* 
 const poll = {
   question: 'What is your favourite programming language?',
   options: ['0: JavaScript', '1: Python', '2: Rust', '3: C++'],
   // This generates [0, 0, 0, 0]. More in the next section 😃
   answers: new Array(4).fill(0),
   registerNewAnswer(){
-    let que = `${this.question} \n`;
-    for (const option of this.options) {
-      que = que + option + '\n';
-    }
-    que = que + '(Write option number)';
-    const userAnswer = window.prompt(que);
+    // let que = `${this.question} \n`;
+    // for (const option of this.options) {
+    //   que = que + option + '\n';
+    // }
+    // que = que + '(Write option number)';
+    // const userAnswer = window.prompt(que);
+    const userAnswer = window.prompt(`${this.question} \n${this.options.join('\n')}\n(Write option number)`);
     if (Number.isInteger(Number(userAnswer)) && userAnswer >= 0 && userAnswer <= 3) {
       this.answers[userAnswer]++;
     }
-    this.displayResults(this.answers);
+    this.displayResults('array');
   },
   displayResults(type){
-    console.log(...type);
+    if (type === 'string') {
+      console.log(`Poll results are ${this.answers.join(',')}`);
+    } else {
+      console.log(this.answers);
+    }
   }
 };
 // poll.registerNewAnswer();
 document.querySelector('.poll').addEventListener('click', poll.registerNewAnswer.bind(poll))
 console.log(poll);
+poll.displayResults.call({ answers: [5, 2, 3] }, 'string');
+poll.displayResults.call({ answers: [1, 5, 3, 9, 6, 1] }, 'string');
+poll.displayResults.call({ answers: [1, 5, 3, 9, 6, 1] }); */
+
+
+// IIFE - Immediately invoked function expressions
+/* const runWhenCalled = function () {
+  console.log('This will run on call');
+}
+runWhenCalled();
+runWhenCalled();
+
+(function () {
+  console.log('This will only run once');
+})();
+
+(() => console.log('This will run once aswell'))();
+
+(function () {
+  const isPrivate = 23;
+  var notPrivate = 46;
+})();
+// console.log(isPrivate); //will not work (Uncaught ReferenceError)
+console.log(notPrivate); */
+
+
+// Closures
+const secureBooking = function (params) {
+  let passengerCount = 0;
+  return function () {
+    passengerCount++;
+    console.log(`${passengerCount} passengers`);
+  }
+}
+
+const booker = secureBooking();
+booker();
+booker();
+booker();
