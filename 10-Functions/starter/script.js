@@ -226,7 +226,7 @@ console.log(notPrivate); */
 
 
 // Closures
-const secureBooking = function (params) {
+/* const secureBooking = function (params) {
   let passengerCount = 0;
   return function () {
     passengerCount++;
@@ -238,3 +238,49 @@ const booker = secureBooking();
 booker();
 booker();
 booker();
+console.dir(booker);
+
+// Exa 1
+let outerFunc;
+
+const func1 = function () {
+  const val = 44;
+  outerFunc = function () {
+    console.log(val * 2);
+  }
+}
+
+const func2 = function () {
+  const val = 44;
+  outerFunc = function () {
+    console.log(val * 10);
+  }
+}
+
+func1();
+outerFunc();
+func2();
+outerFunc();
+
+// Exa 2
+const boardPassengers = function (count, wait) {
+  const perGroup = count / 3;
+  setTimeout(() => {
+    console.log(`We are now boarding all ${count} passengers`);
+    console.log(`There are 3 groups each with ${perGroup} passengers`);
+  }, wait * 1000);
+  console.log(`Will start boarding in ${wait} seconds`);
+}
+
+boardPassengers(90, 3); */
+
+
+//// CODING CHALLENGE 2
+( () => { 
+  const header = document.querySelector('h1');
+  header.style.color = 'purple';
+  document.querySelector('body').addEventListener('click', () => {
+    const header = document.querySelector('h1');
+    header.style.color = 'teal';
+  });
+})();
