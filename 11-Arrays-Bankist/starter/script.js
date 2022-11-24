@@ -61,6 +61,10 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+/////////////////////////////////////////////////
+// BUILDING THE APPLICATION
+/////////////////////////////////////////////////
+
 // Prepare and populate username for all users
 const populateUsername = function (accounts) {
   accounts.forEach(account => {
@@ -73,18 +77,18 @@ const populateUsername = function (accounts) {
 }
 populateUsername(accounts);
 
-const clearInput = function(input){
-  if (Array.isArray(input)) {
-    input.forEach(element => {
-      element.value = '';
-    });
-  } else {
-    element.value = '';
-  }
+// Supporting functions
+const clearInput = function(...input){
+  input.forEach(element => element.value = '');
+}
+const formError = function (...input) {
+  input && input.forEach(element => element.style.border = '1px solid #ff0000');
+  clearInput(...input);
+  console.log('Incorrect details');
 }
 
 // Login Users
-let loggedInUser = account2;
+let currentAccount = account2;
 
 const authUser = function (user, pin) {
   return accounts.find(account => account.username === user && account.pin === Number(pin));  
@@ -97,9 +101,14 @@ const loginUser = function (account) {
   console.log(accounts);
 }
 
+const logout = function () {
+  containerApp.style.opacity = 0;
+  labelWelcome.innerHTML = `Login to get started`;
+}
+
 const populateHeader = function (account) {
   labelWelcome.innerHTML = `Howdy ${account.owner}`;
-  clearInput([inputLoginUsername, inputLoginPin]);
+  clearInput(inputLoginUsername, inputLoginPin);
   /* document.querySelector('nav').style.display = 'none';
   const greetings = `
     <div style=" display: flex; justify-content: space-between; width: 100%; ">
@@ -110,8 +119,10 @@ const populateHeader = function (account) {
   document.querySelector('body').insertAdjacentHTML("afterbegin", greetings); */
 }
 
-const populateMovements = function (account) {
-  const movements = account.movements;
+const populateMovements = function (account, sort = false) {
+  const movements = sort ? 
+    account.movements.slice().sort((a, b) => a - b)
+    : account.movements;
   containerMovements.innerHTML = '';
   movements.forEach((move, index) => {
     const type = move > 0 ? 'deposit' : 'withdrawal';
@@ -130,25 +141,28 @@ const populateMovements = function (account) {
 const populateSummary = function (account) {
   const movements = account.movements;
   const balance = movements
-    .reduce((acc, move) => acc + move, 0);
+    .reduce((accumulate, move) => accumulate + move, 0);
   labelBalance.innerHTML = balance;
   account.balance = balance;
+
   const deposit = movements
     .filter(move => move > 0)
-    .reduce((acc, move) => acc + move, 0);
+    .reduce((accumulate, move) => accumulate + move, 0);
   labelSumIn.innerHTML = deposit;
   account.deposit = deposit;
+
   const withdrawal = Math.abs(
     movements
     .filter(move => move < 0)
-    .reduce((acc, move) => acc + move, 0)
+    .reduce((accumulate, move) => accumulate + move, 0)
   );
   labelSumOut.innerHTML = withdrawal;
   account.withdrawal = withdrawal;
+
   const interest = movements
     .filter(move => move > 0)
     .map(move => move * account.interestRate/100)
-    .reduce((acc, move) => acc + move, 0);
+    .reduce((accumulate, move) => accumulate + move, 0);
   labelSumInterest.innerHTML   = interest;
   account.interest = interest;
 }
@@ -158,53 +172,96 @@ const displayAccountDetails = function (account) {
   populateSummary(account);
 }
 
+// Button actions
+// ==============
+// Submit Login
 const submitLogin = function (e) {
+  e.preventDefault();
   const user = inputLoginUsername.value;
   const pin = inputLoginPin.value;
-  loggedInUser = authUser(user, pin);
-  if (loggedInUser) {
-    loginUser(loggedInUser);
-    console.log(loggedInUser);    
+  currentAccount = authUser(user, pin);
+  if (currentAccount) {
+    loginUser(currentAccount);
   } else {
-    inputLoginUsername.style.borderColor = 'red';
-    inputLoginPin.style.borderColor = 'red';
-    console.log('Incorect details');    
+    formError(inputLoginUsername, inputLoginPin);
   }
-  e.preventDefault();
 }
 btnLogin.addEventListener('click', submitLogin);
 
+// Transfer payment
 const transferPayment = function (e) {
+  e.preventDefault();
   const transferTo = inputTransferTo.value;
   const transferAmount = Number(inputTransferAmount.value);
   const accTo = accounts.find(acc => acc.username === transferTo);
 
-  if(transferTo !== loggedInUser.username && accTo !== undefined){
-    if (transferAmount > 0 && transferAmount < loggedInUser.balance) {
-      loggedInUser.movements.push(transferAmount * -1);
+  if(transferTo !== currentAccount.username && accTo !== undefined){
+    if (transferAmount > 0 && transferAmount < currentAccount.balance) {
+      currentAccount.movements.push(transferAmount * -1);
       accTo.movements.push(transferAmount);
-      displayAccountDetails(loggedInUser);
-      clearInput([inputTransferTo, inputTransferAmount]);
+      displayAccountDetails(currentAccount);
+      clearInput(inputTransferTo, inputTransferAmount);
       document.querySelector('.operation--transfer').insertAdjacentHTML("beforeend", `<p style="color: green">Submited $ ${transferAmount} to ${accTo.owner} succesfuly</p>`);
-      console.log(accounts);
     } else {
       document.querySelector('.operation--transfer').insertAdjacentHTML("beforeend", `<p style="color: red">Transfer amount error!</p>`);
     }
   } else{
-    this.style.backgroundColor = 'red';
-    console.log('Incorect details');
+    formError(inputTransferTo, inputTransferAmount);
   }
-  // console.log(transferTo, transferAmount);
-  e.preventDefault();
 }
 btnTransfer.addEventListener('click', transferPayment);
 
+// Close Account
+const closeAccount = function (e) {
+  e.preventDefault();
+  const user = inputCloseUsername.value;
+  const pin = inputClosePin.value;
+  const closableAccount = authUser(user, pin);
+  if (closableAccount && closableAccount == currentAccount) {
+    const index = accounts.findIndex( acc => acc.username === closableAccount.username);
+    index && accounts.splice(index, 1);
+    logout();
+  } else {
+    formError(inputCloseUsername, inputClosePin);
+  }
+}
+btnClose.addEventListener('click', closeAccount);
+
+// Request Loan
+const requestLoan = function (e) {
+  e.preventDefault();
+  const movements = currentAccount.movements;
+  const loan = Number(inputLoanAmount.value);
+  const loanAvailable = movements.some(mov => loan > 0 && mov >= loan * 0.1);
+  if (loanAvailable) {
+    movements.push(loan);
+    displayAccountDetails(currentAccount);
+    clearInput(inputLoanAmount);
+  } else {
+    formError(inputLoanAmount); 
+  }
+}
+btnLoan.addEventListener('click', requestLoan);
+
+// Sort movements
+let sorted = false;
+const sortMove = function (e) {
+  e.preventDefault();
+  if (sorted) {
+    populateMovements(currentAccount);
+    sorted = false;    
+  } else {
+    populateMovements(currentAccount, true);
+    sorted = true;
+  }
+}
+btnSort.addEventListener('click', sortMove);
+
 /* Temporary */
-loginUser(loggedInUser);
+loginUser(currentAccount);
 /* Temporary */
 
 
-/////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
 
@@ -217,8 +274,6 @@ loginUser(loggedInUser);
 // const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 /////////////////////////////////////////////////
-
-
 
 // ## Simple array methods
 /* 
@@ -356,3 +411,118 @@ const final = movements
   .reduce((acc, move) => move + acc );
 
 console.log(final); */
+
+// ## Some and Every
+/* 
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+console.log(movements);
+// Check Equality
+console.log(movements.includes(-130)); // Checks if there is that exact value exists
+
+// Check condition
+console.log(movements.some(mov => mov > 0)); // Checks if there are any deposits
+
+// Check if all items meet the condition
+console.log(movements.every(mov => mov > 0)); // Checks if all movements are deposits
+console.log(account4.movements.every(move => move > 0));
+
+// separate callback
+console.log('===');
+const deposit = move => move > 0;
+console.log(movements.some(deposit));
+console.log(movements.every(deposit));
+console.log(movements.filter(deposit)); */
+
+// ## Flat and Flatmap
+/* 
+const arr = [[1, 2, 3], 4, 5, [6, 7, 8], 9];
+const arr2 = [[1, 2, 3], 4, 5, [6, 7, [8, 9]], 10];
+console.log(arr.flat());
+console.log(arr2.flat());
+console.log(arr2.flat(2));
+
+const bankMovements = accounts.map(acc => acc.movements);
+console.log(bankMovements.flat());
+console.log(accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((accumulate, move) => accumulate + move, 0)
+);
+
+console.log('Option 2...');
+console.log(accounts
+  .flatMap(acc => acc.movements)
+  .reduce((accumulate, move) => accumulate + move, 0)
+); */
+
+// ## Sorting Arrays
+/* 
+// Numbers
+const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+console.log(movements);
+console.log(movements.sort()); // doesn't work as expected, sorts as if it's a string
+console.log(movements.sort((a, b) => {
+  return a > b ? 1 : -1;
+})); // Sorts in ascending order
+console.log(movements.sort((a, b) => {
+  return a < b ? 1 : -1;
+})); // Sorts in descending order 
+console.log(movements.sort((a, b) => b - a)); // Another way to Sort in descending order 
+
+// Strings
+const owners = accounts.map(acc => acc.owner);
+console.log(owners);
+console.log(owners.sort()); */
+
+// ## Create and Fill Arrays
+/* 
+const arr1 = [1, 2, 3, 4, 5, 6, 7];
+console.log(arr1);
+
+// Empty arrays
+const emptyArr = new Array(7)
+console.log(emptyArr);
+// emptyArr.fill(1) //Fills all 7 elements with 1
+emptyArr.fill(1, 3, 5);
+console.log(emptyArr);
+
+arr1.fill(44, 2, 5);
+console.log(arr1);
+
+// Array.from
+const arr2 = Array.from({length: 7}, () => 1);
+console.log(arr2);
+const arr3 = Array.from({length: 7}, (cur, i) => i + 1);
+console.log(arr3);
+
+labelBalance.addEventListener('click', function (e) {
+  const movesUI = Array.from(document.querySelectorAll('.movements__value'), (el) => Number(el.textContent.replace('$', '')));
+  console.log(movesUI);
+}) */
+
+// ## Array methods practice
+/* 
+// Total Bank Deposits
+const bankDeposit = accounts.flatMap(acc => acc.movements)
+  .filter(mov => mov > 0)
+  .reduce((accumulate, mov) => accumulate + mov , 0);
+console.log(bankDeposit);
+
+// Count Deposits with value > 1000
+// const highBankDeposit = accounts.flatMap(acc => acc.movements)
+//   .filter(mov => mov > 1000)
+//   .length;
+// Other way of doing the above
+const highBankDeposit = accounts.flatMap(acc => acc.movements)
+  .reduce((count, mov) => mov > 1000 ? ++count : count, 0);
+console.log(highBankDeposit);
+
+// Creating objects using reduce
+const {deposits, withdrawals} = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((sums, mov) => {
+    mov > 0 ? (sums.deposits += mov) : (sums.withdrawals += mov);
+    // sums[mov > 0 ? 'deposits' : 'withdrawals'] += mov;
+  }, 
+  {deposits: 0, withdrawals: 0});
+console.log(deposits); */
