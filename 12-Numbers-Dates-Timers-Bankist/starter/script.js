@@ -16,14 +16,14 @@ const account1 = {
   pin: 1111,
 
   movementsDates: [
-    '2019-11-18T21:31:17.178Z',
-    '2019-12-23T07:42:02.383Z',
-    '2020-01-28T09:15:04.904Z',
-    '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2022-11-18T21:31:17.178Z',
+    '2022-12-23T07:42:02.383Z',
+    '2022-01-28T09:15:04.904Z',
+    '2022-04-01T10:17:24.185Z',
+    '2022-05-08T14:11:59.604Z',
+    '2022-05-27T17:01:17.194Z',
+    '2022-07-11T23:36:17.929Z',
+    '2022-07-12T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -36,14 +36,14 @@ const account2 = {
   pin: 2222,
 
   movementsDates: [
-    '2019-11-01T13:15:33.035Z',
-    '2019-11-30T09:48:16.867Z',
-    '2019-12-25T06:04:23.907Z',
-    '2020-01-25T14:18:46.235Z',
-    '2020-02-05T16:33:06.386Z',
-    '2020-04-10T14:43:26.374Z',
-    '2020-06-25T18:49:59.371Z',
-    '2020-07-26T12:01:20.894Z',
+    '2022-11-01T13:15:33.035Z',
+    '2022-11-30T09:48:16.867Z',
+    '2022-10-25T06:04:23.907Z',
+    '2022-01-25T14:18:46.235Z',
+    '2022-12-05T16:33:06.386Z',
+    '2022-12-10T14:43:26.374Z',
+    '2022-12-12T18:49:59.371Z',
+    '2022-12-11T12:01:20.894Z',
   ],
   currency: 'USD',
   locale: 'en-US',
@@ -101,7 +101,22 @@ const formError = function (...input) {
   clearInput(...input);
   console.log('Incorrect details');
 }
-
+const getNow = function () {
+  return new Date().toISOString();
+}
+const toHumanReadableDate = function (date) {
+  const daysPassed = Math.round((new Date() - date) / (1000 * 60 * 60 * 24));
+  if (daysPassed === 0) {
+    return 'Today';
+  } else if (daysPassed === 1) {
+    return 'Yesterday';
+  } else if (daysPassed <= 7) {
+    return daysPassed + ' Days Ago';
+  } else {
+    return date.toLocaleString().slice(0, -6);
+  }
+  // return date.toLocaleString().slice(0, -8)
+}
 // Login Users
 let currentAccount = account2;
 
@@ -124,6 +139,8 @@ const logout = function () {
 const populateHeader = function (account) {
   labelWelcome.innerHTML = `Howdy ${account.owner}`;
   clearInput(inputLoginUsername, inputLoginPin);
+  const now = new Date();
+  labelDate.innerHTML = now.toLocaleString().slice(0,-6);
   /* document.querySelector('nav').style.display = 'none';
   const greetings = `
     <div style=" display: flex; justify-content: space-between; width: 100%; ">
@@ -141,10 +158,11 @@ const populateMovements = function (account, sort = false) {
   containerMovements.innerHTML = '';
   movements.forEach((move, index) => {
     const type = move > 0 ? 'deposit' : 'withdrawal';
+    const mDate = toHumanReadableDate(new Date(account.movementsDates[index]));
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${index + 1} ${type.toUpperCase()}</div>
-        <div class="movements__date">${Math.floor(Math.random() * 30) } days ago</div>
+        <div class="movements__date">${ mDate }</div>
         <div class="movements__value">$ ${move.toFixed(2)}</div>
       </div>
     `;
@@ -213,7 +231,9 @@ const transferPayment = function (e) {
   if(transferTo !== currentAccount.username && accTo !== undefined){
     if (transferAmount > 0 && transferAmount < currentAccount.balance) {
       currentAccount.movements.push(transferAmount * -1);
+      currentAccount.movementsDates.push(getNow());
       accTo.movements.push(transferAmount);
+      accTo.movementsDates.push(getNow());
       displayAccountDetails(currentAccount);
       clearInput(inputTransferTo, inputTransferAmount);
       document.querySelector('.operation--transfer').insertAdjacentHTML("beforeend", `<p style="color: green">Submited $ ${transferAmount} to ${accTo.owner} succesfuly</p>`);
@@ -250,6 +270,7 @@ const requestLoan = function (e) {
   const loanAvailable = movements.some(mov => loan > 0 && mov >= loan * 0.1);
   if (loanAvailable) {
     movements.push(loan);
+    currentAccount.movementsDates.push(getNow());
     displayAccountDetails(currentAccount);
     clearInput(inputLoanAmount);
   } else {
@@ -322,7 +343,7 @@ console.log((4.234).toFixed(2));
 console.log(+(4.234).toFixed(2)); */
 
 // ## Dates
-
+/* 
 const now = Date();
 console.log(now);
 console.log(new Date('Aug 02 2022 18:05:12'));
@@ -336,5 +357,24 @@ console.log(new Date(0));
 console.log(new Date(3* 24 * 60 * 60 * 1000));
 
 // Working with dates
-const future = new Date(2037, 10, 19)
+const future = new Date(2037, 10, 19, 15, 22)
 console.log(future);
+console.log(future.getFullYear());
+console.log(future.getMonth());
+console.log(future.getDate());
+console.log(future.getDay());
+console.log(future.getHours());
+console.log(future.getMinutes());
+console.log(future.getSeconds());
+console.log(future.toISOString());
+console.log(future.getTime());
+console.log(Date.now());
+
+future.setFullYear(2044);
+console.log(future); */
+
+// ## Operation with Dates
+
+const calcDaysPassed = (d1, d2) => (d2 - d1) / (1000 * 60 * 60 * 24);
+const days1 = calcDaysPassed(new Date(2044, 3, 4), new Date(2044, 3, 14))
+console.log(days1);
