@@ -145,7 +145,7 @@ const populateMovements = function (account, sort = false) {
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${index + 1} ${type.toUpperCase()}</div>
         <div class="movements__date">${Math.floor(Math.random() * 30) } days ago</div>
-        <div class="movements__value">$ ${move}</div>
+        <div class="movements__value">$ ${move.toFixed(2)}</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML("afterbegin", html);    
@@ -157,13 +157,13 @@ const populateSummary = function (account) {
   const movements = account.movements;
   const balance = movements
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelBalance.innerHTML = balance;
+  labelBalance.innerHTML = balance.toFixed(2);
   account.balance = balance;
 
   const deposit = movements
     .filter(move => move > 0)
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelSumIn.innerHTML = deposit;
+  labelSumIn.innerHTML = deposit.toFixed(2);
   account.deposit = deposit;
 
   const withdrawal = Math.abs(
@@ -171,14 +171,14 @@ const populateSummary = function (account) {
     .filter(move => move < 0)
     .reduce((accumulate, move) => accumulate + move, 0)
   );
-  labelSumOut.innerHTML = withdrawal;
+  labelSumOut.innerHTML = withdrawal.toFixed(2);
   account.withdrawal = withdrawal;
 
   const interest = movements
     .filter(move => move > 0)
     .map(move => move * account.interestRate/100)
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelSumInterest.innerHTML   = interest;
+  labelSumInterest.innerHTML = interest.toFixed(2);
   account.interest = interest;
 }
 
@@ -276,5 +276,65 @@ btnSort.addEventListener('click', sortMove);
 loginUser(currentAccount);
 /* Temporary */
 
+
 /////////////////////////////////////////////////
 // LECTURES
+/////////////////////////////////////////////////
+
+// ## Convert and Check Numbers
+// ## Math Rounding 
+/*
+console.log(Math.sqrt(25)); // returns square root of 25 = 5
+console.log(25 ** (1/2)); // returns square root of 25 = 5
+console.log(8 ** (1/3)); // returns square root of 8 = 2
+
+console.log(Math.max(5, 8, 44, 11, 2)); // returns the maximum number
+console.log(Math.min(5, 8, 44, 11, 2)); // returns the minimum number
+console.log(Math.max(5, 8, '44', 11, 2)); // returns the maximum number with type coercion
+console.log(Math.max(5, 8, '44px', 11, 2)); // returns NaN - it doesn't do parsing
+
+console.log(Math.PI * Number.parseFloat('10px') ** 2); // returns area of square from parsed length
+
+console.log(Math.floor(Math.random() * 6) + 1); // random number b/n 1-6
+
+const randomInt = (min, max) => Math.trunc(Math.random() * (max - min) + 1) + min;
+console.log(randomInt(-5, 5));
+
+console.log(Math.trunc(44.4)); // 44
+console.log(Math.trunc(44.8)); // 44
+// Round number appropriate 
+console.log(Math.round(44.4)); // 44
+console.log(Math.round(44.8)); // 45
+// Round number up
+console.log(Math.ceil(44.4)); // 45
+console.log(Math.ceil(44.8)); // 45
+// Round number down
+console.log(Math.floor(44.4)); // 44
+console.log(Math.floor(44.8)); // 44
+
+console.log(Math.trunc(-44.4)); // -44 
+console.log(Math.floor(-44.4));  // -45
+
+// Floating point numbers or decimals
+console.log((4.4).toFixed(0));
+console.log((4.4).toFixed(2));
+console.log((4.234).toFixed(2));
+console.log(+(4.234).toFixed(2)); */
+
+// ## Dates
+
+const now = Date();
+console.log(now);
+console.log(new Date('Aug 02 2022 18:05:12'));
+console.log(new Date('December 12, 2022'));
+console.log(new Date(account1.movementsDates[1]));
+
+console.log(new Date(2021, 10, 19, 15, 22, 44)); // JS month is 0 based counter so 10 is November
+console.log(new Date(2021, 10, 31)); // Nov only have 30 days so this will result Dec 01
+
+console.log(new Date(0));
+console.log(new Date(3* 24 * 60 * 60 * 1000));
+
+// Working with dates
+const future = new Date(2037, 10, 19)
+console.log(future);
