@@ -113,12 +113,36 @@ const toHumanReadableDate = function (date) {
   } else if (daysPassed <= 7) {
     return daysPassed + ' Days Ago';
   } else {
-    return date.toLocaleString().slice(0, -6);
+    return Intl.DateTimeFormat('en-GB', dateOptions).format(date);;
+    // return date.toLocaleString().slice(0, -8)
   }
-  // return date.toLocaleString().slice(0, -8)
 }
+const dateOptions = {
+  day:'numeric', 
+  month:'short', 
+  year:'numeric',
+  // weekday: 'short',
+  hour:'numeric', 
+  minute: 'numeric',
+  second: 'numeric'
+};
+const getToday = function () {
+  const now = new Date();
+  return new Intl.DateTimeFormat('en-GB', dateOptions).format(now);
+}
+const currencyFormat = {
+  style: 'currency',
+  currency: 'USD',
+  // useGrouping: false
+}
+const formattedCurrency = function (move) {
+  return Intl.NumberFormat('en-US', currencyFormat).format(move);
+  // return `$ ${move.toFixed(2)}`;
+}
+
 // Login Users
 let currentAccount = account2;
+let timer;
 
 const authUser = function (user, pin) {
   return accounts.find(account => account.username === user && account.pin === Number(pin));  
@@ -129,18 +153,33 @@ const loginUser = function (account) {
   populateHeader(account);
   containerApp.style.opacity = 1;
   console.log(accounts);
+  sessionTimeout();
 }
 
 const logout = function () {
   containerApp.style.opacity = 0;
   labelWelcome.innerHTML = `Login to get started`;
 }
-
+const sessionTimeout = function (sessionMin = 2) {
+  if (timer) clearInterval(timer);
+  sessionMin = sessionMin * 60;
+  timer = setInterval(() => {
+    if (sessionMin > 0) {
+      sessionMin--;
+      const min = String(Math.trunc(sessionMin/60)).padStart(2,0);
+      const sec = String(sessionMin % 60).padStart(2,0);
+      labelTimer.textContent = `${min} : ${sec}`;
+    } else {
+      logout();
+    }
+  }, 1000);
+}
 const populateHeader = function (account) {
   labelWelcome.innerHTML = `Howdy ${account.owner}`;
   clearInput(inputLoginUsername, inputLoginPin);
-  const now = new Date();
-  labelDate.innerHTML = now.toLocaleString().slice(0,-6);
+  setInterval(() => {
+    labelDate.innerHTML = getToday();    
+  }, 1000);
   /* document.querySelector('nav').style.display = 'none';
   const greetings = `
     <div style=" display: flex; justify-content: space-between; width: 100%; ">
@@ -159,11 +198,12 @@ const populateMovements = function (account, sort = false) {
   movements.forEach((move, index) => {
     const type = move > 0 ? 'deposit' : 'withdrawal';
     const mDate = toHumanReadableDate(new Date(account.movementsDates[index]));
+    const mvalue = formattedCurrency(move);
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${index + 1} ${type.toUpperCase()}</div>
         <div class="movements__date">${ mDate }</div>
-        <div class="movements__value">$ ${move.toFixed(2)}</div>
+        <div class="movements__value">${mvalue}</div>
       </div>
     `;
     containerMovements.insertAdjacentHTML("afterbegin", html);    
@@ -175,13 +215,13 @@ const populateSummary = function (account) {
   const movements = account.movements;
   const balance = movements
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelBalance.innerHTML = balance.toFixed(2);
+  labelBalance.innerHTML = formattedCurrency(balance);
   account.balance = balance;
 
   const deposit = movements
     .filter(move => move > 0)
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelSumIn.innerHTML = deposit.toFixed(2);
+  labelSumIn.innerHTML = formattedCurrency(deposit);
   account.deposit = deposit;
 
   const withdrawal = Math.abs(
@@ -189,14 +229,14 @@ const populateSummary = function (account) {
     .filter(move => move < 0)
     .reduce((accumulate, move) => accumulate + move, 0)
   );
-  labelSumOut.innerHTML = withdrawal.toFixed(2);
+  labelSumOut.innerHTML = formattedCurrency(withdrawal);
   account.withdrawal = withdrawal;
 
   const interest = movements
     .filter(move => move > 0)
     .map(move => move * account.interestRate/100)
     .reduce((accumulate, move) => accumulate + move, 0);
-  labelSumInterest.innerHTML = interest.toFixed(2);
+  labelSumInterest.innerHTML = formattedCurrency(interest);
   account.interest = interest;
 }
 
@@ -237,6 +277,7 @@ const transferPayment = function (e) {
       displayAccountDetails(currentAccount);
       clearInput(inputTransferTo, inputTransferAmount);
       document.querySelector('.operation--transfer').insertAdjacentHTML("beforeend", `<p style="color: green">Submited $ ${transferAmount} to ${accTo.owner} succesfuly</p>`);
+      sessionTimeout();
     } else {
       document.querySelector('.operation--transfer').insertAdjacentHTML("beforeend", `<p style="color: red">Transfer amount error!</p>`);
     }
@@ -273,6 +314,7 @@ const requestLoan = function (e) {
     currentAccount.movementsDates.push(getNow());
     displayAccountDetails(currentAccount);
     clearInput(inputLoanAmount);
+    sessionTimeout();
   } else {
     formError(inputLoanAmount); 
   }
@@ -374,7 +416,45 @@ future.setFullYear(2044);
 console.log(future); */
 
 // ## Operation with Dates
-
+/* 
 const calcDaysPassed = (d1, d2) => (d2 - d1) / (1000 * 60 * 60 * 24);
 const days1 = calcDaysPassed(new Date(2044, 3, 4), new Date(2044, 3, 14))
-console.log(days1);
+console.log(days1); */
+
+// ## Internalizing numbers
+/* 
+const num = 3884765.44;
+const numOptions = {
+  style: 'unit',
+  unit: 'mile-per-hour'
+}
+console.log(`US: `, new Intl.NumberFormat('en-US', numOptions).format(num));
+console.log(`Germany: `, new Intl.NumberFormat('de-GR', numOptions).format(num));
+console.log(`Syria: `, new Intl.NumberFormat('ar-SY', numOptions).format(num));
+console.log(`Africa: `, new Intl.NumberFormat('af', numOptions).format(num));
+
+const numOptions1 = {
+  style: 'currency',
+  currency: 'EUR',
+  // useGrouping: false
+}
+console.log(`US: `, new Intl.NumberFormat('en-US', numOptions1).format(num));
+console.log(`Germany: `, new Intl.NumberFormat('de-GR', numOptions1).format(num));
+console.log(`Syria: `, new Intl.NumberFormat('ar-SY', numOptions1).format(num));
+console.log(`Africa: `, new Intl.NumberFormat('af', numOptions1).format(num)); */
+
+// ## Timers
+
+// Set timeout
+/* 
+const ings = ['Olives', 'Spinach'];
+const pizzaTimer = setTimeout((ing1, ing2) => console.log(`Here is your pizza with ${ing1} & ${ing2} 🍕`), 3000, ...ings);
+
+// Set interval
+let count = 6;
+setInterval(() => {
+  if (count > 0) {
+    count--;
+    console.log(count);    
+  }
+}, 1000); */
